@@ -36,22 +36,22 @@ const activePublic = fs.existsSync(publicDir) ? publicDir : (fs.existsSync(local
 
 if (activePublic) {
   app.use(express.static(activePublic));
-      app.use((req, res, next) => {
-        if (req.method === 'GET' && !req.path.startsWith('/api')) {
-          return res.sendFile(path.join(activePublic, 'index.html'));
-        }
-        next();
-      });
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+      return res.sendFile(path.join(activePublic, 'index.html'));
     }
+    next();
+  });
+}
 
-    // Error handler
-    app.use(errorHandler);
+// Error handler
+app.use(errorHandler);
 
-    // Only start HTTP listener when not running in a serverless environment (e.g. Vercel)
-    if (!process.env.VERCEL) {
-      app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
-      });
-    }
+// Only start HTTP listener when not running in a serverless environment (e.g. Vercel)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
 
-    export default app;
+export default app;
