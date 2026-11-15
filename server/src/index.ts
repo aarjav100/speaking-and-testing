@@ -47,8 +47,11 @@ if (activePublic) {
     // Error handler
     app.use(errorHandler);
 
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
+    // Only start HTTP listener when not running in a serverless environment (e.g. Vercel)
+    if (!process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+      });
+    }
 
     export default app;
