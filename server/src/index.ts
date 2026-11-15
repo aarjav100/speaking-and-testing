@@ -15,19 +15,19 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: true,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 
 // Health check
-app.get('/api/health', (_req, res) => {
+app.get(['/api/health', '/health'], (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes
-app.use('/api/auth', authRouter);
-app.use('/api/communication', communicationRouter);
+// Routes - Mounted on both /api/* and root /* to guarantee matching across all Vercel/Docker proxies
+app.use(['/api/auth', '/auth'], authRouter);
+app.use(['/api/communication', '/communication'], communicationRouter);
 
 // Serve static frontend in production (Docker or unified deployment)
 const publicDir = path.join(__dirname, '../public');
