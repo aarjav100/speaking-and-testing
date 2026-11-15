@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+dist/
+*/dist/
+
+# Environment files
+.env
+.env.local
+*/.env
+
+# Session & temp storage
+sessions_store.json
+*/sessions_store.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# System & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
