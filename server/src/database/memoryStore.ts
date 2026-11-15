@@ -78,7 +78,12 @@ class MemoryStore {
   public pronunciationIssues = new Map<string, any[]>();
   public users = new Map<string, UserProfile>();
 
-  private storageFile = path.join(__dirname, 'sessions_store.json');
+  private getStorageFile(): string {
+    if (process.env.VERCEL) {
+      return path.join('/tmp', 'sessions_store.json');
+    }
+    return path.join(__dirname, 'sessions_store.json');
+  }
 
   constructor() {
     // Default demo user
@@ -97,8 +102,9 @@ class MemoryStore {
 
   private loadFromDisk() {
     try {
-      if (fs.existsSync(this.storageFile)) {
-        const raw = fs.readFileSync(this.storageFile, 'utf-8');
+      const file = this.getStorageFile();
+      if (fs.existsSync(file)) {
+        const raw = fs.readFileSync(file, 'utf-8');
         const data = JSON.parse(raw);
 
         if (data.sessions) {
@@ -120,6 +126,7 @@ class MemoryStore {
 
   private saveToDisk() {
     try {
+      const file = this.getStorageFile();
       const issuesObj: Record<string, any[]> = {};
       for (const [k, v] of this.pronunciationIssues.entries()) {
         issuesObj[k] = v;
@@ -130,7 +137,7 @@ class MemoryStore {
         results: Array.from(this.results.values()),
         issues: issuesObj,
       };
-      fs.writeFileSync(this.storageFile, JSON.stringify(data, null, 2), 'utf-8');
+      fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf-8');
     } catch (e) {
       console.warn('Failed to save sessions to disk', e);
     }
