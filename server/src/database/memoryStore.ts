@@ -102,27 +102,27 @@ class MemoryStore {
 
   private loadFromDisk() {
     try {
-      const file = this.getStorageFile();
-      if (fs.existsSync(file)) {
-        const raw = fs.readFileSync(file, 'utf-8');
-        const data = JSON.parse(raw);
+        const file = this.getStorageFile();
+        if (fs.existsSync(file)) {
+          const raw = fs.readFileSync(file, 'utf-8');
+          const data = JSON.parse(raw);
 
-        if (data.sessions) {
-          for (const s of data.sessions) this.sessions.set(s.id, s);
-        }
-        if (data.results) {
-          for (const r of data.results) this.results.set(r.session_id, r);
-        }
-        if (data.issues) {
-          for (const k of Object.keys(data.issues)) {
-            this.pronunciationIssues.set(k, data.issues[k]);
+          if (data.sessions) {
+            for (const s of data.sessions) this.sessions.set(s.id, s);
+          }
+          if (data.results) {
+            for (const r of data.results) this.results.set(r.session_id, r);
+          }
+          if (data.issues) {
+            for (const k of Object.keys(data.issues)) {
+              this.pronunciationIssues.set(k, data.issues[k]);
+            }
           }
         }
+      } catch (e) {
+        console.warn('Failed to load sessions from disk', e);
       }
-    } catch (e) {
-      console.warn('Failed to load sessions from disk', e);
     }
-  }
 
   private saveToDisk() {
     try {
