@@ -84,7 +84,7 @@ export default function Navbar() {
             Passages
           </Link>
           <Link
-            to="/word-practice"
+            to="/story-practice"
             style={{
               fontSize: '0.875rem',
               fontWeight: 600,
@@ -95,7 +95,21 @@ export default function Navbar() {
               borderRadius: '8px',
             }}
           >
-            Word Practice ✨
+            Stories 📖
+          </Link>
+          <Link
+            to="/word-practice"
+            style={{
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              color: 'var(--text-secondary)',
+              padding: '0.35rem 0.75rem',
+              borderRadius: '8px',
+              transition: 'color 0.15s ease',
+            }}
+          >
+            Word Practice
           </Link>
         </div>
       )}
