@@ -14,6 +14,7 @@ import Communication from './pages/Communication';
 import Result from './pages/Result';
 import WordPractice from './pages/WordPractice';
 import StoryPractice from './pages/StoryPractice';
+import BookPractice from './pages/BookPractice';
 
 export default function App() {
   return (
@@ -57,6 +58,14 @@ export default function App() {
                     element={
                       <ProtectedRoute>
                         <StoryPractice />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/book-practice"
+                    element={
+                      <ProtectedRoute>
+                        <BookPractice />
                       </ProtectedRoute>
                     }
                   />

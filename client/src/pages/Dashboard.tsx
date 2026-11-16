@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mic, Target, TrendingUp, Volume2, ArrowRight, Sparkles, BookOpen, Flame } from 'lucide-react';
+import { Mic, Target, TrendingUp, Volume2, ArrowRight, Sparkles, BookOpen, Flame, BookMarked } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -21,7 +21,101 @@ export default function Dashboard() {
 
           {/* Action Cards Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-            {/* Story Reading Practice Card (NEW) */}
+            {/* Book Reading Practice Card (NEW) */}
+            <div
+              className="glass-card animate-fade-in-up"
+              style={{
+                padding: '2rem',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                position: 'relative',
+                overflow: 'hidden',
+                border: '1px solid #3b82f6',
+              }}
+              onClick={() => navigate('/book-practice')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/book-practice')}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '1rem',
+                  right: '1rem',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '9999px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                New Feature
+              </div>
+
+              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+                <div
+                  style={{
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <BookMarked size={24} color="white" />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.375rem' }}>
+                    Book Reading Practice
+                  </h2>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: '0 0 1rem', lineHeight: 1.5 }}>
+                    Read "How to Be People Smart" and more books paragraph-by-paragraph with text splitting, vocabulary drills, and session reports.
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1.25rem' }}>
+                    {[
+                      'How to Be People Smart',
+                      'Mode A: My Copy',
+                      'Mode B: Key Ideas',
+                      'Vocabulary Drills',
+                      'Sentence Chunks',
+                    ].map((chip) => (
+                      <span
+                        key={chip}
+                        style={{
+                          padding: '0.25rem 0.625rem',
+                          borderRadius: '9999px',
+                          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                          color: '#3b82f6',
+                          fontSize: '0.6875rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    className="btn-primary"
+                    onClick={(e) => { e.stopPropagation(); navigate('/book-practice'); }}
+                    style={{ fontSize: '0.8125rem', padding: '0.5rem 1rem', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}
+                  >
+                    Read Books
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Story Reading Practice Card */}
             <div
               className="glass-card animate-fade-in-up"
               style={{

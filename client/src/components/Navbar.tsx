@@ -89,13 +89,27 @@ export default function Navbar() {
                   fontSize: '0.875rem',
                   fontWeight: 600,
                   textDecoration: 'none',
+                  color: 'var(--text-secondary)',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  transition: 'color 0.15s ease',
+                }}
+              >
+                Stories 📖
+              </Link>
+              <Link
+                to="/book-practice"
+                style={{
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  textDecoration: 'none',
                   color: 'var(--color-primary-500)',
                   backgroundColor: 'var(--color-primary-50)',
                   padding: '0.35rem 0.75rem',
                   borderRadius: '8px',
                 }}
               >
-                Stories 📖
+                Books 📚
               </Link>
               <Link
                 to="/word-practice"
