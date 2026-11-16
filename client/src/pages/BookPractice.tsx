@@ -50,6 +50,8 @@ import {
   Trophy,
   Layers,
   HelpCircle,
+  Search,
+  X,
 } from 'lucide-react';
 
 export default function BookPractice() {
@@ -109,6 +111,59 @@ export default function BookPractice() {
   const startTimeRef = useRef<number>(0);
   const transcriptBufferRef = useRef<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState('All');
+  const [chapterSearchQuery, setChapterSearchQuery] = useState('');
+
+  // Filtered books based on Search query & Category
+  const filteredBooks = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return BOOKS_DATABASE.filter((book) => {
+      // Category match
+      let matchesCat = true;
+      if (activeCategoryFilter === 'People Smart') {
+        matchesCat = book.id === 'book-people-smart';
+      } else if (activeCategoryFilter === 'Communication') {
+        matchesCat = book.theme.toLowerCase().includes('communication') || book.id === 'book-people-smart';
+      } else if (activeCategoryFilter === 'Crucial') {
+        matchesCat = book.id === 'book-crucial-conversations';
+      } else if (activeCategoryFilter === 'Habits') {
+        matchesCat = book.id === 'book-atomic-habits';
+      }
+
+      if (!matchesCat) return false;
+      if (!q) return true;
+
+      // Deep search across Title, Author, Theme, Description, Chapters, and Vocabulary
+      const titleMatch = book.title.toLowerCase().includes(q);
+      const authorMatch = book.author.toLowerCase().includes(q);
+      const themeMatch = book.theme.toLowerCase().includes(q);
+      const descMatch = book.description.toLowerCase().includes(q);
+      const chapterMatch = book.chapters.some(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.vocabulary.some((v) => v.word.toLowerCase().includes(q))
+      );
+
+      return titleMatch || authorMatch || themeMatch || descMatch || chapterMatch;
+    });
+  }, [searchQuery, activeCategoryFilter]);
+
+  // Filtered chapters for active book
+  const filteredChapters = useMemo(() => {
+    if (!selectedBook) return [];
+    const q = chapterSearchQuery.trim().toLowerCase();
+    if (!q) return selectedBook.chapters;
+    return selectedBook.chapters.filter(
+      (c) =>
+        c.title.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) ||
+        c.vocabulary.some((v) => v.word.toLowerCase().includes(q))
+    );
+  }, [selectedBook, chapterSearchQuery]);
 
   // Check for saved ongoing session on initial load
   useEffect(() => {
@@ -668,111 +723,252 @@ export default function BookPractice() {
           </div>
         )}
 
-        {/* Featured First Book: "How to Be People Smart" */}
-        <div className="mb-10">
-          <div className="text-xs font-bold uppercase tracking-wider text-primary-500 mb-3 flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4" /> Featured Book of the Month
+        {/* Search & Filter Bar */}
+        <div className="glass-card p-4 mb-8 space-y-3 border border-border/80">
+          <div className="relative flex items-center">
+            <Search className="w-5 h-5 text-muted-foreground absolute left-3.5 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder='Search books or topics: "How to Be People Smart", "communication", "listening", "empathy", "body language"...'
+              className="w-full pl-11 pr-10 py-3 rounded-xl bg-secondary/60 border border-border/60 text-sm text-foreground focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all placeholder:text-muted-foreground/60"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary"
+                title="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          <div
-            onClick={() => handleSelectBook(BOOKS_DATABASE[0])}
-            className="glass-card p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between border-2 border-primary-500/40 hover:border-primary-500 hover:shadow-xl transition-all cursor-pointer group rounded-2xl"
-          >
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-              {/* Gradient Book Cover Tile */}
-              <div
-                className="w-28 h-36 rounded-xl flex flex-col justify-between p-3.5 text-white shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform"
-                style={{ background: BOOKS_DATABASE[0].coverGradient }}
+          {/* Quick Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold">
+            <span className="text-muted-foreground text-[11px] uppercase tracking-wider mr-1 flex items-center gap-1 flex-shrink-0">
+              <ListFilter className="w-3.5 h-3.5" /> Quick Filters:
+            </span>
+            {[
+              { id: 'All', label: 'All Books' },
+              { id: 'People Smart', label: '⭐ How to Be People Smart' },
+              { id: 'Communication', label: 'Communication & Listening' },
+              { id: 'Crucial', label: 'Crucial Conversations' },
+              { id: 'Habits', label: 'Atomic Habits' },
+            ].map((chip) => (
+              <button
+                key={chip.id}
+                onClick={() => {
+                  setActiveCategoryFilter(chip.id);
+                  if (chip.id === 'People Smart') setSearchQuery('');
+                }}
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
+                  activeCategoryFilter === chip.id
+                    ? 'bg-primary-500 text-white shadow-sm'
+                    : 'bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
               >
-                <div className="text-[10px] uppercase font-bold tracking-wider opacity-80">
-                  Speaking Mastery
-                </div>
-                <div>
-                  <div className="text-xs font-black leading-tight mb-1">
-                    {BOOKS_DATABASE[0].title}
-                  </div>
-                  <div className="text-[9px] opacity-80">{BOOKS_DATABASE[0].author}</div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary-500/10 text-primary-500">
-                    {BOOKS_DATABASE[0].theme}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {BOOKS_DATABASE[0].chapters.length} Chapters
-                  </span>
-                </div>
-
-                <h2 className="text-2xl font-black text-foreground group-hover:text-primary-500 transition-colors mb-2">
-                  {BOOKS_DATABASE[0].title}
-                </h2>
-
-                <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed mb-4">
-                  {BOOKS_DATABASE[0].description}
-                </p>
-
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="px-2.5 py-1 rounded-md bg-secondary text-foreground font-medium">
-                    Mode A: Upload or Paste Your Copy
-                  </span>
-                  <span className="px-2.5 py-1 rounded-md bg-primary-500/10 text-primary-500 font-medium">
-                    Mode B: Original AI Key Ideas
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm font-bold text-primary-500 group-hover:translate-x-1.5 transition-transform flex-shrink-0">
-              <span>Open Chapters</span>
-              <ArrowRight className="w-5 h-5" />
-            </div>
-          </div>
-        </div>
-
-        {/* All Available Books Grid */}
-        <div className="mb-6">
-          <h3 className="text-lg font-bold text-foreground mb-4">More Books in Library</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {BOOKS_DATABASE.slice(1).map((book) => (
-              <div
-                key={book.id}
-                onClick={() => handleSelectBook(book)}
-                className="glass-card p-5 flex gap-4 hover:border-primary-500/50 hover:shadow-lg transition-all group cursor-pointer rounded-xl"
-              >
-                <div
-                  className="w-20 h-28 rounded-lg flex flex-col justify-between p-2.5 text-white shadow-md flex-shrink-0 group-hover:scale-105 transition-transform"
-                  style={{ background: book.coverGradient }}
-                >
-                  <div className="text-[9px] uppercase font-bold opacity-80">Book</div>
-                  <div className="text-[11px] font-bold leading-tight">{book.title}</div>
-                </div>
-
-                <div className="flex flex-col justify-between flex-1">
-                  <div>
-                    <span className="text-[10px] font-bold text-primary-500 uppercase">
-                      {book.theme}
-                    </span>
-                    <h4 className="text-base font-bold text-foreground group-hover:text-primary-500 transition-colors">
-                      {book.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
-                      {book.description}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40 mt-3">
-                    <span className="text-muted-foreground">{book.chapters.length} Chapters</span>
-                    <span className="font-semibold text-primary-500 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      Practice <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              </div>
+                {chip.label}
+              </button>
             ))}
           </div>
+
+          {searchQuery && (
+            <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
+              <span>
+                Found {filteredBooks.length} book{filteredBooks.length === 1 ? '' : 's'} matching "{searchQuery}"
+              </span>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-primary-500 hover:underline font-semibold"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* FEATURED FIRST BOOK: "How to Be People Smart" */}
+        {filteredBooks.some((b) => b.id === 'book-people-smart') && (
+          <div className="mb-10">
+            <div className="text-xs font-bold uppercase tracking-wider text-primary-500 mb-3 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" /> First Book • How to Be People Smart
+            </div>
+
+            <div
+              className="glass-card p-6 md:p-8 flex flex-col gap-6 border-2 border-primary-500/40 hover:border-primary-500 hover:shadow-xl transition-all rounded-2xl bg-gradient-to-br from-primary-500/5 via-transparent to-transparent"
+            >
+              <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                  {/* Book Cover */}
+                  <div
+                    className="w-28 h-36 rounded-xl flex flex-col justify-between p-3.5 text-white shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                    style={{ background: BOOKS_DATABASE[0].coverGradient }}
+                    onClick={() => handleSelectBook(BOOKS_DATABASE[0])}
+                  >
+                    <div className="text-[10px] uppercase font-bold tracking-wider opacity-90">
+                      Speaking Mastery
+                    </div>
+                    <div>
+                      <div className="text-xs font-black leading-tight mb-1">
+                        {BOOKS_DATABASE[0].title}
+                      </div>
+                      <div className="text-[9px] opacity-80">{BOOKS_DATABASE[0].author}</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary-500/15 text-primary-600 dark:text-primary-400">
+                        {BOOKS_DATABASE[0].theme}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-semibold">
+                        {BOOKS_DATABASE[0].chapters.length} Chapters Complete
+                      </span>
+                    </div>
+
+                    <h2
+                      onClick={() => handleSelectBook(BOOKS_DATABASE[0])}
+                      className="text-2xl md:text-3xl font-black text-foreground hover:text-primary-500 transition-colors cursor-pointer mb-2"
+                    >
+                      {BOOKS_DATABASE[0].title}
+                    </h2>
+
+                    <p className="text-xs text-muted-foreground font-medium mb-1">
+                      By {BOOKS_DATABASE[0].author}
+                    </p>
+
+                    <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed mb-3">
+                      {BOOKS_DATABASE[0].description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <span className="px-2.5 py-1 rounded-md bg-secondary text-foreground font-semibold">
+                        Mode A: Upload or Paste Your Copy
+                      </span>
+                      <span className="px-2.5 py-1 rounded-md bg-primary-500/10 text-primary-500 font-semibold">
+                        Mode B: Original AI Key Ideas
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleSelectBook(BOOKS_DATABASE[0])}
+                  className="btn btn-primary py-2.5 px-6 flex items-center gap-2 font-bold shadow-md shadow-primary-500/25 flex-shrink-0"
+                >
+                  <span>Open Chapters</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Quick Chapter Launcher for "How to Be People Smart" */}
+              <div className="pt-4 border-t border-border/50">
+                <div className="text-xs font-bold text-foreground mb-3 flex items-center gap-2">
+                  <Layers className="w-3.5 h-3.5 text-primary-500" />
+                  <span>Chapters in "How to Be People Smart" (click any to practice):</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {BOOKS_DATABASE[0].chapters.map((ch, idx) => (
+                    <button
+                      key={ch.id}
+                      onClick={() => {
+                        setSelectedBook(BOOKS_DATABASE[0]);
+                        handleSwitchChapter(ch);
+                        setView('chapterSelect');
+                      }}
+                      className="text-left p-2.5 rounded-xl bg-secondary/50 hover:bg-primary-500/10 border border-border/60 hover:border-primary-500/50 transition-all group/ch"
+                    >
+                      <div className="text-[10px] font-bold text-primary-500 uppercase tracking-wide">
+                        Chapter {idx + 1}
+                      </div>
+                      <div className="text-xs font-bold text-foreground group-hover/ch:text-primary-500 transition-colors line-clamp-1">
+                        {ch.title}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                        {ch.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Other Matching Books */}
+        {filteredBooks.filter((b) => b.id !== 'book-people-smart').length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-foreground mb-4">
+              {filteredBooks.some((b) => b.id === 'book-people-smart')
+                ? 'More Books in Library'
+                : 'Search Results'}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredBooks
+                .filter((b) => b.id !== 'book-people-smart')
+                .map((book) => (
+                  <div
+                    key={book.id}
+                    onClick={() => handleSelectBook(book)}
+                    className="glass-card p-5 flex gap-4 hover:border-primary-500/50 hover:shadow-lg transition-all group cursor-pointer rounded-xl"
+                  >
+                    <div
+                      className="w-20 h-28 rounded-lg flex flex-col justify-between p-2.5 text-white shadow-md flex-shrink-0 group-hover:scale-105 transition-transform"
+                      style={{ background: book.coverGradient }}
+                    >
+                      <div className="text-[9px] uppercase font-bold opacity-80">Book</div>
+                      <div className="text-[11px] font-bold leading-tight">{book.title}</div>
+                    </div>
+
+                    <div className="flex flex-col justify-between flex-1">
+                      <div>
+                        <span className="text-[10px] font-bold text-primary-500 uppercase">
+                          {book.theme}
+                        </span>
+                        <h4 className="text-base font-bold text-foreground group-hover:text-primary-500 transition-colors">
+                          {book.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                          {book.description}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40 mt-3">
+                        <span className="text-muted-foreground">{book.chapters.length} Chapters</span>
+                        <span className="font-semibold text-primary-500 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          Practice <ArrowRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty Search State */}
+        {filteredBooks.length === 0 && (
+          <div className="text-center py-16 glass-card p-8 rounded-2xl">
+            <Search className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
+            <h3 className="text-lg font-bold text-foreground">
+              No books found matching "{searchQuery}"
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              We couldn't find any books with that title or topic. Click below to view "How to Be People Smart".
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setActiveCategoryFilter('All');
+              }}
+              className="btn btn-primary text-xs py-2 px-5 mt-4"
+            >
+              Show "How to Be People Smart"
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -817,21 +1013,42 @@ export default function BookPractice() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Column 1: Chapter Picker */}
           <div className="lg:col-span-1 space-y-3">
-            <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
               <Layers className="w-4 h-4 text-primary-500" />
               <span>Select Chapter / Topic</span>
             </h3>
 
-            <div className="space-y-2">
-              {selectedBook.chapters.map((ch, idx) => {
+            {/* Chapter search input */}
+            <div className="relative mb-2">
+              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5 pointer-events-none" />
+              <input
+                type="text"
+                value={chapterSearchQuery}
+                onChange={(e) => setChapterSearchQuery(e.target.value)}
+                placeholder="Search chapters (listening, empathy...)"
+                className="w-full pl-8 pr-7 py-1.5 rounded-lg bg-secondary/60 border border-border/70 text-xs text-foreground focus:outline-none focus:border-primary-500 transition-colors"
+              />
+              {chapterSearchQuery && (
+                <button
+                  onClick={() => setChapterSearchQuery('')}
+                  className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+              {filteredChapters.map((ch, idx) => {
                 const isSelected = ch.id === selectedChapter.id;
                 const prevScore = getPreviousChapterScore(selectedBook.id, ch.id);
+                const originalIndex = selectedBook.chapters.findIndex((c) => c.id === ch.id);
 
                 return (
                   <button
                     key={ch.id}
                     onClick={() => handleSwitchChapter(ch)}
-                    className={`w-full text-left p-3.5 rounded-xl border transition-all ${
+                    className={`w-full text-left p-3 rounded-xl border transition-all ${
                       isSelected
                         ? 'border-primary-500 bg-primary-500/10 shadow-sm'
                         : 'border-border/60 hover:border-border hover:bg-secondary/40'
@@ -839,7 +1056,7 @@ export default function BookPractice() {
                   >
                     <div className="flex items-center justify-between text-xs font-bold mb-1">
                       <span className={isSelected ? 'text-primary-500' : 'text-muted-foreground'}>
-                        Chapter {idx + 1}
+                        Chapter {originalIndex + 1}
                       </span>
                       {prevScore !== null && (
                         <span className="text-[11px] text-emerald-500 flex items-center gap-1">
@@ -854,6 +1071,18 @@ export default function BookPractice() {
                   </button>
                 );
               })}
+
+              {filteredChapters.length === 0 && (
+                <div className="text-center py-6 text-xs text-muted-foreground">
+                  No chapters match "{chapterSearchQuery}".
+                  <button
+                    onClick={() => setChapterSearchQuery('')}
+                    className="block mx-auto text-primary-500 font-semibold mt-1 hover:underline"
+                  >
+                    Clear filter
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

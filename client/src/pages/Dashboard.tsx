@@ -72,20 +72,25 @@ export default function Dashboard() {
             </div>
 
             <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Featured Book
+                </span>
+              </div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.375rem' }}>
-                Book Reading Practice
+                "How to Be People Smart" — Book Practice
               </h2>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: '0 0 1rem', lineHeight: 1.5 }}>
-                Read "How to Be People Smart" and more books paragraph-by-paragraph with text splitting, vocabulary drills, and session reports.
+                Master active listening, body language, and empathy by reading "How to Be People Smart" paragraph-by-paragraph with sentence chunking and vocabulary drills.
               </p>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1.25rem' }}>
                 {[
                   'How to Be People Smart',
+                  '6 Complete Chapters',
                   'Mode A: My Copy',
                   'Mode B: Key Ideas',
                   'Vocabulary Drills',
-                  'Sentence Chunks',
                 ].map((chip) => (
                   <span
                     key={chip}
@@ -108,7 +113,7 @@ export default function Dashboard() {
                 onClick={(e) => { e.stopPropagation(); navigate('/book-practice'); }}
                 style={{ fontSize: '0.8125rem', padding: '0.5rem 1rem', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}
               >
-                Read Books
+                Read "How to Be People Smart"
                 <ArrowRight size={14} />
               </button>
             </div>
